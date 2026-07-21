@@ -6,7 +6,10 @@ with **Google MediaPipe Pose**, and the resulting motion sequences are
 classified by a **stacked LSTM** deep learning model built with
 **TensorFlow/Keras**. A **Streamlit** application provides a professional,
 dark-themed UI for dataset exploration, video upload, live inference, and
-model analytics.
+model analytics
+
+Link:[https://github.com/AkkisettiGanesh/Human_Activity_Recognition](https://github.com/AkkisettiGanesh/Human_Activity_Recognition)
+
 
 ## Features
 
