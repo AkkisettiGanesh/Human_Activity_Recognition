@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Large generated / downloaded artifacts
+models/*.keras
+models/*.task
+processed_data/*.npy
+dataset_corrupted/
+
+.streamlit/
+.DS_Store
+*.log
+dataset/
+outputs/
+*.mp4
+*.avi
+*.mov

@@ -1,0 +1,7 @@
+{
+  "jumping": 0,
+  "run": 1,
+  "sit": 2,
+  "walk": 3,
+  "wave": 4
+}

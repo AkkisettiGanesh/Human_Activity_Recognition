@@ -1,0 +1,22 @@
+{
+  "sequence_length": 30,
+  "feature_dim": 132,
+  "classes": [
+    "jumping",
+    "run",
+    "sit",
+    "walk",
+    "wave"
+  ],
+  "splits": {
+    "train": {
+      "num_samples": 214
+    },
+    "val": {
+      "num_samples": 43
+    },
+    "test": {
+      "num_samples": 51
+    }
+  }
+}
