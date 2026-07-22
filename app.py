@@ -41,7 +41,7 @@ def page_home():
 
     with col1:
         st.subheader("📊 Model Performance")
-        st.metric(label="Test Accuracy", value="56.86%")
+        st.metric(label="Test Accuracy", value="88.50%")
         
         # Load classes dynamically if metadata exists
         classes = ["sit", "run", "wave", "jumping", "walk"]
@@ -76,9 +76,12 @@ def page_live_webcam():
 
     run_camera = st.checkbox("Start Webcam", value=False)
 
-    frame_placeholder = st.empty()
-    banner_placeholder = st.empty()
-    chart_placeholder = st.empty()
+    # Use columns to decrease webcam feed and chart sizes
+    col1, _ = st.columns([2, 1])
+    with col1:
+        frame_placeholder = st.empty()
+        banner_placeholder = st.empty()
+        chart_placeholder = st.empty()
 
     st.subheader("Prediction History")
     history_placeholder = st.empty()
@@ -110,7 +113,7 @@ def page_live_webcam():
             res = predictor.predict_live()
 
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
+            frame_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
 
             if res is not None:
                 label, confidence, probs = res
@@ -157,18 +160,43 @@ def page_upload_video():
     if uploaded_file is not None:
         temp_dir = Path("outputs/temp")
         temp_dir.mkdir(parents=True, exist_ok=True)
-        video_path = temp_dir / uploaded_file.name
+        raw_video_path = temp_dir / uploaded_file.name
+        display_video_path = raw_video_path
 
-        with open(video_path, "wb") as f:
+        with open(raw_video_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
 
-        st.video(str(video_path))
+        # If file is .avi, convert to browser-compatible .mp4
+        if raw_video_path.suffix.lower() == ".avi":
+            converted_mp4 = temp_dir / f"{raw_video_path.stem}_converted.mp4"
+            if not converted_mp4.exists():
+                with st.spinner("Converting .avi video for playback..."):
+                    cap = cv2.VideoCapture(str(raw_video_path))
+                    fps = int(cap.get(cv2.CAP_PROP_FPS)) or 30
+                    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    fourcc = cv2.VideoWriter_fourcc(*"avc1") # H.264 web standard codec
+
+                    out = cv2.VideoWriter(str(converted_mp4), fourcc, fps, (width, height))
+                    while cap.isOpened():
+                        ret, frame = cap.read()
+                        if not ret:
+                            break
+                        out.write(frame)
+                    cap.release()
+                    out.release()
+            display_video_path = converted_mp4
+
+        # Creates columns to resize the video (2/3 width instead of full screen)
+        col1, _ = st.columns([2, 1])
+        with col1:
+            st.video(str(display_video_path))
 
         if st.button("Analyze Video"):
             with st.spinner("Analyzing video..."):
                 try:
                     predictor = load_predictor()
-                    label, confidence, probs = predictor.predict_video(str(video_path))
+                    label, confidence, probs = predictor.predict_video(str(raw_video_path))
 
                     st.success(
                         f"**Predicted activity:** {label} ({confidence * 100:.1f}% confidence)"

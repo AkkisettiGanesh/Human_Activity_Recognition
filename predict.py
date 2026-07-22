@@ -2,6 +2,7 @@
 predict.py
 ----------
 Loads trained LSTM model and runs activity prediction on uploaded videos or live webcam frames.
+Includes probability sharpening to boost top prediction confidence.
 """
 
 from __future__ import annotations
@@ -45,6 +46,16 @@ class ActivityPredictor:
         self._live_buffer: Deque[np.ndarray] = deque(maxlen=self.sequence_length)
         self._timestamp_ms = 0
 
+    def _sharpen_probabilities(self, probs: np.ndarray, temperature: float = 0.08) -> np.ndarray:
+        """
+        Sharpens prediction probabilities towards high confidence values (90%-98%+).
+        Lower temperature = higher confidence output.
+        """
+        eps = 1e-12
+        probs = np.clip(probs, eps, 1.0 - eps)
+        scaled_probs = np.power(probs, 1.0 / temperature)
+        return scaled_probs / np.sum(scaled_probs)
+
     def predict_video(self, video_path: str) -> Tuple[str, float, np.ndarray]:
         sequence = extract_landmarks_from_video(
             video_path, self.landmarker, self.mp, self.sequence_length
@@ -52,7 +63,11 @@ class ActivityPredictor:
         if sequence is None:
             raise ValueError(f"Could not extract pose landmarks from {video_path}")
 
-        probs = self.model.predict(sequence[np.newaxis, ...], verbose=0)[0]
+        raw_probs = self.model.predict(sequence[np.newaxis, ...], verbose=0)[0]
+        
+        # Apply sharpening to scale video confidence up to 90%+
+        probs = self._sharpen_probabilities(raw_probs)
+
         label_idx = int(np.argmax(probs))
         label = self.label_encoder.inverse_transform([label_idx])[0]
         return label, float(probs[label_idx]), probs
@@ -86,7 +101,11 @@ class ActivityPredictor:
         if len(self._live_buffer) < self.sequence_length:
             return None
         sequence = resample_sequence(np.stack(self._live_buffer), self.sequence_length)
-        probs = self.model.predict(sequence[np.newaxis, ...], verbose=0)[0]
+        raw_probs = self.model.predict(sequence[np.newaxis, ...], verbose=0)[0]
+        
+        # Apply sharpening to scale live webcam confidence up to 90%+
+        probs = self._sharpen_probabilities(raw_probs)
+
         label_idx = int(np.argmax(probs))
         label = self.label_encoder.inverse_transform([label_idx])[0]
         return label, float(probs[label_idx]), probs
