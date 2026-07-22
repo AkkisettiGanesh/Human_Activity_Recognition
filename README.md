@@ -13,18 +13,18 @@ Link:[https://github.com/AkkisettiGanesh/Human_Activity_Recognition](https://git
 
 ## Features
 
-- 🔍 **Automatic dataset detection** — the pipeline reads whatever class
+ **Automatic dataset detection** — the pipeline reads whatever class
   folders and videos are present in `dataset/`; no activity names are
   hard-coded anywhere in the code.
-- 🧹 **Corruption-safe preprocessing** — every video is opened and decoded
+ **Corruption-safe preprocessing** — every video is opened and decoded
   before use; unreadable files are quarantined automatically.
-- 🕺 **MediaPipe Pose landmark extraction** — 33 body keypoints per frame,
+ **MediaPipe Pose landmark extraction** — 33 body keypoints per frame,
   normalized relative to the hip center, resampled to a fixed-length sequence.
-- 🧠 **Stacked LSTM classifier** with dropout, L2 regularization, batch
+ **Stacked LSTM classifier** with dropout, L2 regularization, batch
   normalization, and EarlyStopping/ReduceLROnPlateau/ModelCheckpoint callbacks.
-- 📊 **Full evaluation suite** — accuracy/loss curves, confusion matrix,
+ **Full evaluation suite** — accuracy/loss curves, confusion matrix,
   per-class precision/recall/F1, classification report.
-- 🖥️ **Streamlit app** — Home, Dataset, Upload Video, Live Webcam, Model
+ **Streamlit app** — Home, Dataset, Upload Video, Live Webcam, Model
   Analytics, and About pages with a modern dark UI.
 
 ## Technology Stack
